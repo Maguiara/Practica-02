@@ -19,19 +19,38 @@
 #include <string>
 #include <fstream>
 
+class Nodo {
+
+
+ private:
+  std::pair<int, int> posicion_;
+  Nodo* padre_;
+  int g_;  // Costo desde el nodo inicial
+  int h_;  // Heurística (costo estimado al nodo objetivo)
+  int f_;  // Costo total (g + h)
+};
+
+
 
 typedef std::vector<std::vector<int>> Matrix; 
 
 class Laberinto {
  public:
+
+ // Constructor
   bool ProcesarArchivoEntrada(const std::string&);
 
+    
+
+
+
+  // Imprime el laberinto en la consola
   void ImprimirLaberinto() const {
     for (const auto& fila : grid_) {
       for (const auto& celda : fila) {
         switch (celda) {
           case 0:
-            std::cout << " - ";  // Espacio libre
+            std::cout << " □";  // Espacio libre
             break;
           case 1:
             std::cout << "██";  // Pared
@@ -40,7 +59,7 @@ class Laberinto {
             std::cout << "S ";  // Inicio
             break;
           case 4:
-            std::cout << "E ";  // Salida
+            std::cout << " E";  // Salida
             break;
           default:
             std::cout << "? ";  // Desconocido
@@ -50,6 +69,8 @@ class Laberinto {
       std::cout << std::endl;
     }
   }
+
+
 
  private:
   int filas_;  // Número de filas del laberinto

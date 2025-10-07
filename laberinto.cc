@@ -17,12 +17,16 @@ bool Laberinto::ProcesarArchivoEntrada(const std::string& input_name) {
   grid_.resize(filas_, std::vector<int>(columnas_));
 
   int casilla;
-  while(input >> casilla) {
-    for(int i = 0; i < filas_; ++i) {
-      for(int j = 0; j < columnas_; ++j) {
-        grid_[i][j] = casilla;
+  for(int i = 0; i < filas_; ++i) {
+    for(int j = 0; j < columnas_; ++j) {
+      input >> casilla;
+      if(input.fail()) {
+        std::cerr << "Error al leer la casilla (" << i << ", " << j << ")" << std::endl;
+        return false;
       }
+      grid_[i][j] = casilla;
     }
   }
   return true;
 }
+
