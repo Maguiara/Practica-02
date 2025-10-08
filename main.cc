@@ -19,8 +19,13 @@ int main(int argc, char* argv[]) {
     return 1;
   }
 
+  char opcion;
+  std::cout << "¿Quiere introducir el laberinto por teclado? (s/n): ";
+  std::cin >> opcion;
+  bool entrada_teclado = (opcion == 's' || opcion == 'S');
+
   Laberinto laberinto;
-  if (!laberinto.ProcesarArchivoEntrada(argv[1])) {
+  if (!laberinto.ProcesarArchivoEntrada(argv[1], entrada_teclado)) {
     return 1;
   }
 
