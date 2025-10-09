@@ -18,37 +18,53 @@
 #include <vector>  
 #include <string>
 #include <fstream>
+#include <algorithm>
 
 class Nodo {
 
-  public:
-  //Constructores
-  Nodo() = default;
-  Nodo(std::pair<int, int> posicion, Nodo* padre = nullptr, int g = 0, int h = 0)  : posicion_(posicion), padre_(padre), g_(g), h_(h), f_(g + h) {}
+ public:
+  Nodo(std::pair<int, int> pos, Nodo* padre = nullptr, int g = 0, int h = 0)  : posicion_(pos), padre_(padre), g_(g), h_(h), f_(g + h) {}
 
-  // Getters
-  int get_g() const { return g_; }
-  int get_h() const { return h_; }
-  int get_f() const { return f_; }
-  std::pair<int, int> get_posicion() const { return posicion_; }
-  Nodo* get_padre() const { return padre_; }
-  // Setters
-  void set_g(int g) { g_ = g; }
-  void set_h(std::pair<int, int> posicion_actual, std::pair<int, int> fin) { 
-    const int W = 3; // Peso de la heurística
-    h_ = abs(fin.first - posicion_actual.first) + abs(fin.second - posicion_actual.second) * W;
+  //Getters
+  std::pair<int, int> GetPosicion() const { return posicion_; }
+  Nodo* GetPadre() const { return padre_; }
+  int GetG() const { return g_; }
+  int GetH() const { return h_; }
+  int GetF() const { return f_; }
+
+  //Setters
+  void SetPosicion(const std::pair<int, int>& posicion) { posicion_ = posicion; }
+  void SetPadre(Nodo* padre_) { this->padre_ = padre_; }
+  void SetG(int g) { g_ = g; f_ = g_ + h_; }
+  void SetH(int h) { h_ = h; f_ = g_ + h_; }
+  void SetF(int f) { f_ = f; }
+
+  // Sobrecarga para que se comparen los nodos por f(n)
+  bool operator<(const Nodo& other) const {
+    return f_ < other.f_;
   }
-  void set_f(int f) { f_ = f; }
-  void set_posicion(std::pair<int, int> posicion) { posicion_ = posicion; }
-  void set_padre(Nodo* padre) { padre_ = padre; }
 
  private:
   std::pair<int, int> posicion_;
   Nodo* padre_;
-  int g_;  // Costo desde el nodo inicial
-  int h_;  // Heurística (costo estimado al nodo objetivo)
-  int f_;  // Costo total (g + h)
+  int g_;
+  int h_;
+  int f_;
 };
+
+
+
+enum Movimientos {
+  ARRIBA = 5,
+  ABAJO = 5,
+  IZQUIERDA = 5,
+  DERECHA = 5,
+  DIAGONAL_ARRIBA_IZQUIERDA = 7,
+  DIAGONAL_ARRIBA_DERECHA = 7,
+  DIAGONAL_ABAJO_IZQUIERDA = 7,
+  DIAGONAL_ABAJO_DERECHA = 7
+};
+
 
 
 
@@ -60,9 +76,13 @@ class Laberinto {
  // Constructor
   bool ProcesarArchivoEntrada(const std::string&, bool);
 
-  bool Aestrella(std::pair<int, int> inicio, std::pair<int, int> fin);
+  bool Aestrella();
 
   
+  int Heuristica(std::pair<int, int> actual) {
+    const int W = 3; // Peso de la heurística
+    return abs(fin_.first - actual.first) + abs(fin_.second - actual.second) * W;
+  }
 
 
   // Imprime el laberinto en la consola
@@ -74,9 +94,6 @@ class Laberinto {
   int filas_;  // Número de filas del laberinto
   int columnas_;  // Número de columnas del laberinto
   Matrix grid_;  // Matriz que representa el laberinto
-  std::vector<Nodo> nodos_abiertos_;  // Lista de nodos abiertos
-  std::vector<Nodo> nodos_cerrados_;  // Lista de nodos cerrados
-  std::vector<std::pair<int, int>> ruta_;  // Ruta desde el inicio hasta la salida
   std::pair<int, int> inicio_;  // Posición de inicio (fila, columna)
   std::pair<int, int> fin_;  // Posición de fin (fila, columna)
 };

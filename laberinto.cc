@@ -46,29 +46,37 @@ bool Laberinto::ProcesarArchivoEntrada(const std::string& input_name, bool entra
  * @param fin: Par de enteros que representa la posición final (fila, columna)
  * @return: true si se encuentra una ruta, false en caso contrario
  */
-bool Laberinto::Aestrella(std::pair<int, int> inicio, std::pair<int, int> fin) {
+bool Laberinto::Aestrella() {
  
+  std::vector<Nodo*> abiertos;
+  std::vector<Nodo*> cerrados;
   //Paso 1: Calcular f(n), g(n) y h(n) para el punto de entrada al laberinto, S, que se inserta
   //en la lista de nodos abiertos A.
-  Nodo nodo_inicial;
-  nodo_inicial.set_posicion(inicio);
-  nodo_inicial.set_g(0);
-  nodo_inicial.set_h(inicio, fin);
-  nodo_inicial.set_f(nodo_inicial.get_g() + nodo_inicial.get_h());
-  nodos_abiertos_.push_back(nodo_inicial);
+  Nodo* actual = new Nodo(inicio_, nullptr, 0, Heuristica(inicio_));
+  // Insertar nodo inicial en la lista de nodos abiertos //
+  abiertos.push_back(actual);
+
 
   //Paso 2: Repetir mientras A no esta vacia
-  while (!nodos_abiertos_.empty()) {
+  while (!abiertos.empty()) {
   //  (a) Seleccionar el nodo de menor coste f(n), e insertarlo en la 
   //      lista de nodos cerrados C.
-    Nodo actual;
-    for (auto nodo : nodos_cerrados_) {
-      if (nodo.get_f() < actual.get_f()) actual = nodo; 
-    }
-    nodos_cerrados_.push_back(actual);
+    std::sort(abiertos.begin(), abiertos.end(), [] (Nodo* a, Nodo* b) {
+      return a->GetF() < b->GetF();
+    });
 
-    //  (b) (b) Para cada nodo vecino, realizar las siguientes acciones:
-    std::vector<Nodo> nodos_vecinos;
+    actual = abiertos[0];
+  // Prueba meta
+    if (actual->GetPosicion() == fin_) {
+      std::cout << "Wacho, encontre camino" << std::endl;
+      break;
+    }
+
+    cerrados.push_back(actual);
+    abiertos.erase(abiertos.begin());
+
+  //  (b) Para cada nodo vecino, realizar las siguientes acciones:
+    
 
   //      (b.1) Si el nodo no está ni en A, ni en C, su nodo padre será el nodo analizado
   //          y será insertado en A. Realizar las acciones que corresponda.
@@ -77,9 +85,10 @@ bool Laberinto::Aestrella(std::pair<int, int> inicio, std::pair<int, int> fin) {
   //            su coste g(n) y, por lo tanto, su padre en el camino. Nótese que se deben
   //            recalcular los costes necesarios.
   
+}
   // Paso 3: Si A = ∅ y no se ha llegado a la salida del laberinto, E, no existe camino y se
   // deberá mostrar en pantalla un mensaje que así lo indique.
-  }
+
   return true; // Placeholder
 }
 
