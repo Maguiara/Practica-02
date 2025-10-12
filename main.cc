@@ -30,5 +30,10 @@ int main(int argc, char* argv[]) {
   }
 
   laberinto.ImprimirLaberinto();
+  // Ejecutar el algoritmo A*
+  if (!laberinto.Aestrella()) {
+    std::cerr << "Ha ocurrido un error al ejecutar el algoritmo A*" << std::endl;
+    return 1;
+  }
   return 0;
 }

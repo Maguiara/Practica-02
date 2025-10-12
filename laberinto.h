@@ -78,10 +78,13 @@ class Laberinto {
 
   bool Aestrella();
 
+  void Randomizer();
   
   int Heuristica(std::pair<int, int> actual) {
     const int W = 3; // Peso de la heurística
-    return abs(fin_.first - actual.first) + abs(fin_.second - actual.second) * W;
+    int dx = abs(fin_.first - actual.first);
+    int dy = abs(fin_.second - actual.second);
+    return W * (dx + dy); // Distancia de Manhattan * 3
   }
 
 
