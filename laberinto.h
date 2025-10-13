@@ -91,6 +91,16 @@ class Laberinto {
   // Imprime el laberinto en la consola
   void ImprimirLaberinto() const;
 
+  void MarcarCamino(Nodo* nodo) {
+    Nodo* temp = nodo;
+      while (temp != nullptr) {
+        if (temp->GetPosicion() != inicio_ && temp->GetPosicion() != fin_) {
+          grid_[temp->GetPosicion().first][temp->GetPosicion().second] = 5;
+        }
+        temp = temp->GetPadre();
+      }
+  }
+
   
   
   private:

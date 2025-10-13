@@ -78,13 +78,8 @@ bool Laberinto::Aestrella() {
   // Prueba meta
     if (actual->GetPosicion() == fin_) {
       std::cout << "Wacho, encontre camino" << std::endl;
-      Nodo* temp = actual;
-      while (temp != nullptr) {
-        if (temp->GetPosicion() != inicio_ && temp->GetPosicion() != fin_) {
-          grid_[temp->GetPosicion().first][temp->GetPosicion().second] = 5;
-        }
-        temp = temp->GetPadre();
-      }
+      // Reconstruir el camino desde el nodo actual hasta el inicio
+      MarcarCamino(actual);
       ImprimirLaberinto();
       break;
     }
@@ -104,13 +99,14 @@ bool Laberinto::Aestrella() {
         if (grid_[vecino_pos.first][vecino_pos.second] == 1) continue; // Pared
 
         // Calcular el costo de movimiento (diagonal = 7, ortogonal = 5)
-        int costo_movimiento = (abs(i) == 1 && abs(j) == 1) ? 7 : 5;
+        int costo_movimiento = (abs(i) == abs(j)) ? 7 : 5;
         int nuevo_g = actual->GetG() + costo_movimiento;
 
         // Verificar si el vecino ya está en la lista de cerrados
         auto it_cerrados = std::find_if(cerrados.begin(), cerrados.end(), [&vecino_pos](Nodo* n) {
           return n->GetPosicion() == vecino_pos;
         });
+        // Si está en cerrados, ignorarlo
         if (it_cerrados != cerrados.end()) continue;
 
         // Verificar si el vecino ya está en la lista de abiertos
@@ -123,7 +119,6 @@ bool Laberinto::Aestrella() {
           if (nuevo_g < (*it_abiertos)->GetG()) {
             (*it_abiertos)->SetPadre(actual);
             (*it_abiertos)->SetG(nuevo_g);
-            (*it_abiertos)->SetF((*it_abiertos)->GetG() + (*it_abiertos)->GetH());
           }
         } else {
           // Crear el nodo si no está en abiertos
