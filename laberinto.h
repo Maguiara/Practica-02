@@ -19,6 +19,8 @@
 #include <string>
 #include <fstream>
 #include <algorithm>
+#include <random> 
+#include <ctime>
 
 class Nodo {
 
@@ -76,31 +78,57 @@ class Laberinto {
  // Constructor
   bool ProcesarArchivoEntrada(const std::string&, bool);
 
+  // Funciones principales
   bool Aestrella();
-
   void Randomizer();
-  
+
+  // Heurística: Distancia de Manhattan * 3
   int Heuristica(std::pair<int, int> actual) {
     const int W = 3; // Peso de la heurística
     int dx = abs(fin_.first - actual.first);
     int dy = abs(fin_.second - actual.second);
-    return W * (dx + dy); // Distancia de Manhattan * 3
+    return W * (dx + dy);
   }
 
-
-  // Imprime el laberinto en la consola
+  // Funciones auxiliares
   void ImprimirLaberinto() const;
 
+  /// @brief Marca el camino encontrado en el laberinto.
+  /// @param nodo Puntero al nodo actual.
   void MarcarCamino(Nodo* nodo) {
-    Nodo* temp = nodo;
-      while (temp != nullptr) {
-        if (temp->GetPosicion() != inicio_ && temp->GetPosicion() != fin_) {
-          grid_[temp->GetPosicion().first][temp->GetPosicion().second] = 5;
+      while (nodo != nullptr) {
+        if (nodo->GetPosicion() != inicio_ && nodo->GetPosicion() != fin_) {
+          grid_[nodo->GetPosicion().first][nodo->GetPosicion().second] = 5;
         }
-        temp = temp->GetPadre();
+        nodo = nodo->GetPadre();
       }
   }
 
+  /// @brief Asegura que no haya más de un 25% de obstáculos en el laberinto.
+  void AsegurarObstaculosMinimos() {
+    double porcentaje_obstaculos = GetPorcentajeObstaculos();
+    while (porcentaje_obstaculos > 0.25) {
+      for (int i = 0; i < filas_; ++i) {
+        for (int j = 0; j < columnas_; ++j) {
+          if (grid_[i][j] == 1) { // Casilla con obstáculo
+            float random_value = static_cast<float>(std::rand()) / RAND_MAX;
+            if (random_value >= 0.5) grid_[i][j] = 0; // Convertir en libre
+          }
+        }
+      }
+      porcentaje_obstaculos = GetPorcentajeObstaculos();
+    }
+  }
+
+  /// @brief Calcula el porcentaje de obstáculos en el laberinto.
+  /// @return Porcentaje de obstáculos (valor entre 0 y 1).
+  double GetPorcentajeObstaculos() const {
+    double total = filas_ * columnas_, obstaculos = 0;
+    for (const auto& fila : grid_) {
+      obstaculos += std::count(fila.begin(), fila.end(), 1);
+    }
+    return obstaculos / total;
+  }
   
   
   private:
@@ -109,6 +137,9 @@ class Laberinto {
   Matrix grid_;  // Matriz que representa el laberinto
   std::pair<int, int> inicio_;  // Posición de inicio (fila, columna)
   std::pair<int, int> fin_;  // Posición de fin (fila, columna)
+
+  float pin_ = 0.5; // Probabilidad de que una celda libre se convierta en obstáculo
+  float pout_ = 0.5; // Probabilidad de que una celda con
 };
 
 

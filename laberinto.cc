@@ -58,13 +58,9 @@ bool Laberinto::Aestrella() {
   // Inicializamos e insertamos el nodo inicial en A
   Nodo* actual = new Nodo(inicio_, nullptr, 0, Heuristica(inicio_));
   abiertos.push_back(actual);
-
-  // int iteracion = 1;
   
   // mientras A no esté vacío
   while (!abiertos.empty()) {
-    // debug 
-    //std::cout << "Iteracion " << iteracion++ << std::endl;
 
   // Seleccionar el nodo con el menor f(n) en A como el nodo actual
     std::sort(abiertos.begin(), abiertos.end(), [] (Nodo* a, Nodo* b) {
@@ -72,9 +68,6 @@ bool Laberinto::Aestrella() {
     });
     actual = abiertos[0];
     
-    // debug
-    //std::cout << "Nodo actual: (" << actual->GetPosicion().first << ", " << actual->GetPosicion().second << ") with f(n) = " << actual->GetF() << std::endl;
-  
   // Prueba meta
     if (actual->GetPosicion() == fin_) {
       std::cout << "Wacho, encontre camino" << std::endl;
@@ -88,7 +81,7 @@ bool Laberinto::Aestrella() {
     cerrados.push_back(actual);
     abiertos.erase(abiertos.begin()); 
 
-  // recorrer los vecinos del nodo actual
+    // Para cada vecino del nodo actual
     for (int i = -1; i <= 1; i++) {
       for (int j = -1; j <= 1; j++) {
         if (i == 0 && j == 0) continue; // Evitar el mismo nodo
@@ -98,7 +91,7 @@ bool Laberinto::Aestrella() {
         || vecino_pos.second >= columnas_) continue; // Fuera de límites
         if (grid_[vecino_pos.first][vecino_pos.second] == 1) continue; // Pared
 
-        // Calcular el costo de movimiento (diagonal = 7, ortogonal = 5)
+        // Calcular el costo de movimiento: diagonal = 7, ortogonal = 5
         int costo_movimiento = (abs(i) == abs(j)) ? 7 : 5;
         int nuevo_g = actual->GetG() + costo_movimiento;
 
@@ -113,7 +106,7 @@ bool Laberinto::Aestrella() {
         auto it_abiertos = std::find_if(abiertos.begin(), abiertos.end(), [&vecino_pos](Nodo* n) {
           return n->GetPosicion() == vecino_pos;
         });
-
+        // Si está en abiertos, verificar si el nuevo camino es mejor
         if (it_abiertos != abiertos.end()) {
           // Actualizar el nodo si el nuevo camino es mejor
           if (nuevo_g < (*it_abiertos)->GetG()) {
@@ -127,9 +120,6 @@ bool Laberinto::Aestrella() {
         }
       }
     }
-    // debug
-    //ImprimirLaberinto(); 
-    //std::cout << "------------------------" << std::endl;
   }
   // Paso 3: Si A = ∅ y no se ha llegado a la salida del laberinto, E, no existe camino y se
   // deberá mostrar en pantalla un mensaje que así lo indique.
@@ -138,21 +128,54 @@ bool Laberinto::Aestrella() {
     return false;
   }
 
+  // Liberar memoria de nodos
+  for (auto nodo : abiertos) delete nodo;
+  for (auto nodo : cerrados) delete nodo;
 
-  return true; // Placeholder
+  return true; 
 }
 
 
+/**
+ * @brief Modifica el laberinto aleatoriamente, cambiando algunas casillas libres a obstáculos y viceversa.
+ * Asegura que no haya más de un 25% de obstáculos en el laberinto.
+ */
 
+
+// TODO LIST: implemtar que se pueda cambiar con una entrada de teclado
+void Laberinto::Randomizer() {
+  float pin = 0.5, pout = 0.5;
+  std::srand(static_cast<unsigned>(std::time(nullptr))); // Inicializar la semilla aleatoria
+  for (int i = 0; i < filas_; ++i) {
+    for (int j = 0; j < columnas_; ++j) {
+      if (grid_[i][j] == 0 || grid_[i][j] == 5) { // Casilla libre o parte del camino
+        float random_value = static_cast<float>(std::rand()) / RAND_MAX;
+        if (random_value >= (1 - pin)) {
+          if (grid_[i][j] == 5) grid_[i][j] = 6; // Marcar que la casilla antes era parte del camino
+          else grid_[i][j] = 1; // Convertir en obstáculo
+        }
+      } else if (grid_[i][j] == 1) { // Casilla con obstáculo
+        float random_value = static_cast<float>(std::rand()) / RAND_MAX;
+        if (random_value >= (1 - pout)) {
+          grid_[i][j] = 0; // Convertir en libre
+        }
+      }
+    }
+  } 
+  // Asegurar que no haya mas de un 25% de obstáculos
+  AsegurarObstaculosMinimos();
+}
 
 
 
 
 /**
  * @brief Imprime el laberinto en la consola.
- * Representa espacios libres con '-', paredes con '█', el inicio con 'S' y la salida con 'E'.
+ * Representa espacios libres con '-', paredes con '█', el inicio con 'S', la salida con 'E', y 
+ * el camino encontrado con '*'.
  */
 void Laberinto::ImprimirLaberinto() const {
+  std::cout << std::endl;
   for (const auto& fila : grid_) {
     for (const auto& celda : fila) {
       switch (celda) {
@@ -178,4 +201,5 @@ void Laberinto::ImprimirLaberinto() const {
     }
     std::cout << std::endl;
   }
+  std::cout << std::endl;
 }
