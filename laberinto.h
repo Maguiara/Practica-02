@@ -76,11 +76,16 @@ class Laberinto {
  public:
 
  // Constructor
-  bool ProcesarArchivoEntrada(const std::string&, bool);
+  bool ProcesarArchivoEntrada(const std::string&, const std::string&, bool);
 
+  // Setter
+
+  void SetInicio(const std::pair<int, int>& inicio) { inicio_ = inicio; }
+  void SetFin(const std::pair<int, int>& fin) { fin_ = fin; }
   // Funciones principales
   bool Aestrella();
-  void Randomizer();
+  void Randomizer(const double pin = 0.5, const double pout = 0.5);
+  void Practica (const std::string& archivo_salida); 
 
   // Heurística: Distancia de Manhattan * 3
   int Heuristica(std::pair<int, int> actual) {
@@ -91,11 +96,11 @@ class Laberinto {
   }
 
   // Funciones auxiliares
-  void ImprimirLaberinto() const;
+  void ImprimirLaberinto(const std::string&) const;
 
   /// @brief Marca el camino encontrado en el laberinto.
   /// @param nodo Puntero al nodo actual.
-  void MarcarCamino(Nodo* nodo) {
+  void MarcarCaminoAestrella(Nodo* nodo) {
       while (nodo != nullptr) {
         if (nodo->GetPosicion() != inicio_ && nodo->GetPosicion() != fin_) {
           grid_[nodo->GetPosicion().first][nodo->GetPosicion().second] = 5;
@@ -103,6 +108,7 @@ class Laberinto {
         nodo = nodo->GetPadre();
       }
   }
+
 
   /// @brief Asegura que no haya más de un 25% de obstáculos en el laberinto.
   void AsegurarObstaculosMinimos() {
@@ -129,15 +135,57 @@ class Laberinto {
     }
     return obstaculos / total;
   }
+
+  /// @brief Mueve el agente una vez hacia la posición del siguiente paso en el camino encontrado por A*.
+  Nodo* MoverAgente(Nodo* nodo) {
+     while (nodo->GetPadre() != nullptr && nodo->GetPadre()->GetPadre() != nullptr) {
+        nodo = nodo->GetPadre();
+      }
+      return nodo;
+  }
+
+  void BorrarCamino() {
+    for (int i = 0; i < filas_; ++i) {
+      for (int j = 0; j < columnas_; ++j) {
+        if (grid_[i][j] == 5) {
+          grid_[i][j] = 0; // Convertir en libre
+        }
+      }
+    }
+  }
   
+  void ImprimirDetallesLaberinto(const std::string& output_file) const {
+    std::ofstream output(output_file, std::ios::app);
+    if (!output.is_open()) {
+      std::cerr << "Error al abrir el archivo de salida: " << output_file << std::endl;
+      return;
+    }
+    output << "========================" << std::endl;
+    output << "Detalles del Laberinto:" << std::endl;
+    output << "Posición del Agente:       (" << inicio_.first << ", " << inicio_.second << ")" << std::endl;
+    output << "Posición de la Salida:     (" << fin_.first << ", " << fin_.second << ")" << std::endl;
+    output << "Porcentaje de Obstáculos:  " << GetPorcentajeObstaculos() * 100 << "%" << std::endl;
+    output << "Nodos Generados:           " << nodos_generados_ << std::endl;
+    output << "Nodos Inspeccionados:      " << nodos_inspeccionados_ << std::endl;
+    output << "Pasos del Agente:          " << numeros_pasos_ << std::endl;
+    output << "========================" << std::endl;
+    output.close();
+  }
   
   private:
+  // Atributos del laberinto
   int filas_;  // Número de filas del laberinto
   int columnas_;  // Número de columnas del laberinto
   Matrix grid_;  // Matriz que representa el laberinto
   std::pair<int, int> inicio_;  // Posición de inicio (fila, columna)
   std::pair<int, int> fin_;  // Posición de fin (fila, columna)
 
+  //Contadores para las metricas
+  int nodos_generados_ = 0; // Contador de nodos generados
+  int nodos_inspeccionados_ = 0; // Contador de nodos inspeccionados
+  int numeros_pasos_ = 0; // Contador de pasos realizados por el agente
+  
+  // Probabilidades para el randomizer
   float pin_ = 0.5; // Probabilidad de que una celda libre se convierta en obstáculo
   float pout_ = 0.5; // Probabilidad de que una celda con
 };

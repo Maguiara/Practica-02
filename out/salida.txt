@@ -1,0 +1,180 @@
+██████████
+█--█-----█
+█--█-----█
+█--█--█--█
+S--████--█
+█A*******E
+█--------█
+█--████--█
+█--█-----█
+█--█-----█
+██████████
+Detalles del Laberinto:
+========================
+Posición del Agente:       (5, 1)
+Posición de la Salida:     (5, 9)
+Porcentaje de Obstáculos:  10%
+Nodos Generados:           32
+Nodos Inspeccionados:      24
+Pasos del Agente:          0
+========================
+---------█
+--█----█-█
+------█---
+----------
+S---------
+-^A******E
+---█--█--█
+---█------
+----------
+-----█----
+--------█-
+Detalles del Laberinto:
+========================
+Posición del Agente:       (5, 2)
+Posición de la Salida:     (5, 9)
+Porcentaje de Obstáculos:  24.5455%
+Nodos Generados:           82
+Nodos Inspeccionados:      52
+Pasos del Agente:          0
+========================
+█---█---██
+█--------█
+█--██--█--
+-----█----
+S---****--
+-A^A██-█*E
+█--------█
+-----█----
+█------██-
+------█---
+-█-████--█
+Detalles del Laberinto:
+========================
+Posición del Agente:       (5, 3)
+Posición de la Salida:     (5, 9)
+Porcentaje de Obstáculos:  19.0909%
+Nodos Generados:           133
+Nodos Inspeccionados:      82
+Pasos del Agente:          0
+========================
+--█--█---█
+--█----█-█
+-█----█--█
+-█-█--██--
+S---█--█--
+-^AAA****E
+---█--██-█
+----------
+-----█----
+-----█----
+----------
+Detalles del Laberinto:
+========================
+Posición del Agente:       (5, 4)
+Posición de la Salida:     (5, 9)
+Porcentaje de Obstáculos:  23.6364%
+Nodos Generados:           160
+Nodos Inspeccionados:      95
+Pasos del Agente:          0
+========================
+█---█---██
+█--------█
+█--██--█--
+-----█----
+S----A**--
+-A^A^█-█*E
+█--------█
+-----█----
+█------██-
+------█---
+-█-████--█
+Detalles del Laberinto:
+========================
+Posición del Agente:       (4, 5)
+Posición de la Salida:     (5, 9)
+Porcentaje de Obstáculos:  19.0909%
+Nodos Generados:           196
+Nodos Inspeccionados:      113
+Pasos del Agente:          0
+========================
+--█--█---█
+--█----█-█
+-█----█--█
+-█-█--██--
+S---█A-█--
+-^AAA-A**E
+---█--██-█
+----------
+-----█----
+-----█----
+----------
+Detalles del Laberinto:
+========================
+Posición del Agente:       (5, 6)
+Posición de la Salida:     (5, 9)
+Porcentaje de Obstáculos:  23.6364%
+Nodos Generados:           212
+Nodos Inspeccionados:      121
+Pasos del Agente:          0
+========================
+█---█---██
+█--------█
+█--██--█--
+-----█----
+S----A-A--
+-A^A^█A█*E
+█--------█
+-----█----
+█------██-
+------█---
+-█-████--█
+Detalles del Laberinto:
+========================
+Posición del Agente:       (4, 7)
+Posición de la Salida:     (5, 9)
+Porcentaje de Obstáculos:  18.1818%
+Nodos Generados:           231
+Nodos Inspeccionados:      130
+Pasos del Agente:          0
+========================
+--█--█---█
+--█----█-█
+-█----█--█
+-█-█--██--
+S---█A-^--
+-^AAA-A-AE
+---█--██-█
+----------
+-----█----
+-----█----
+----------
+Detalles del Laberinto:
+========================
+Posición del Agente:       (5, 8)
+Posición de la Salida:     (5, 9)
+Porcentaje de Obstáculos:  23.6364%
+Nodos Generados:           241
+Nodos Inspeccionados:      135
+Pasos del Agente:          0
+========================
+█---█---██
+█--------█
+█--██--█--
+-----█----
+S----A-A--
+-A^A^█A█AA
+█--------█
+-----█----
+█------██-
+------█---
+-█-████--█
+Detalles del Laberinto:
+========================
+Posición del Agente:       (5, 9)
+Posición de la Salida:     (5, 9)
+Porcentaje de Obstáculos:  20%
+Nodos Generados:           247
+Nodos Inspeccionados:      137
+Pasos del Agente:          0
+========================

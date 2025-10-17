@@ -7,7 +7,7 @@
  * @param input_name: Nombre del archivo de entrada
  * @return: true si el archivo se procesa correctamente, false en caso contrario
  */
-bool Laberinto::ProcesarArchivoEntrada(const std::string& input_name, bool entrada_teclado) {
+bool Laberinto::ProcesarArchivoEntrada(const std::string& input_name, const std::string& output_name, bool entrada_teclado) {
   std::ifstream input(input_name);
   if(!input.is_open()) {
     std::cerr << "No se pudo abrir el archivo de entrada, revise el nombre o que este exista" << std::endl;
@@ -39,7 +39,7 @@ bool Laberinto::ProcesarArchivoEntrada(const std::string& input_name, bool entra
 
   if (entrada_teclado) {
     std::cout << "Laberinto cargado desde archivo:" << std::endl;
-    ImprimirLaberinto();
+    ImprimirLaberinto(output_name);
   }
   return true;
 }
@@ -52,87 +52,111 @@ bool Laberinto::ProcesarArchivoEntrada(const std::string& input_name, bool entra
  * @return: true si se encuentra una ruta, false en caso contrario
  */
 bool Laberinto::Aestrella() {
- 
-  std::vector<Nodo*> abiertos;
-  std::vector<Nodo*> cerrados;
-  // Inicializamos e insertamos el nodo inicial en A
-  Nodo* actual = new Nodo(inicio_, nullptr, 0, Heuristica(inicio_));
-  abiertos.push_back(actual);
-  
-  // mientras A no esté vacío
-  while (!abiertos.empty()) {
+  const int max_intentos = 5; // Número máximo de intentos
+  int intentos = 0;
 
-  // Seleccionar el nodo con el menor f(n) en A como el nodo actual
-    std::sort(abiertos.begin(), abiertos.end(), [] (Nodo* a, Nodo* b) {
-      return a->GetF() < b->GetF();
-    });
-    actual = abiertos[0];
-    
-  // Prueba meta
-    if (actual->GetPosicion() == fin_) {
-      std::cout << "Wacho, encontre camino" << std::endl;
-      // Reconstruir el camino desde el nodo actual hasta el inicio
-      MarcarCamino(actual);
-      ImprimirLaberinto();
-      break;
+  while (intentos < max_intentos) {
+    std::vector<Nodo*> abiertos;
+    std::vector<Nodo*> cerrados;
+
+    // Inicializamos e insertamos el nodo inicial en A
+    Nodo* actual = new Nodo(inicio_, nullptr, 0, Heuristica(inicio_));
+    abiertos.push_back(actual);
+
+    // mientras A no esté vacío
+    while (!abiertos.empty()) {
+      // Seleccionar el nodo con el menor f(n) en A como el nodo actual
+      std::sort(abiertos.begin(), abiertos.end(), [](Nodo* a, Nodo* b) {
+        return a->GetF() < b->GetF();
+      });
+      actual = abiertos[0];
+      nodos_inspeccionados_++;
+
+      // Prueba meta
+      if (actual->GetPosicion() == fin_) {
+        // std::cout << "Camino encontrado en el intento " << intentos + 1 << std::endl;
+        MarcarCaminoAestrella(actual);
+        //
+        inicio_ = MoverAgente(actual)->GetPosicion();
+        // Liberar memoria de nodos
+        for (auto nodo : abiertos) delete nodo;
+        for (auto nodo : cerrados) delete nodo;
+
+        return true;
+      }
+
+      // Mover actual de abiertos a cerrados
+      cerrados.push_back(actual);
+      abiertos.erase(abiertos.begin());
+
+      // Para cada vecino del nodo actual
+      for (int i = -1; i <= 1; i++) {
+        for (int j = -1; j <= 1; j++) {
+          if (i == 0 && j == 0) continue; // Evitar el mismo nodo
+          std::pair<int, int> vecino_pos = {actual->GetPosicion().first + i, actual->GetPosicion().second + j};
+          // Verificar que el vecino esté dentro de los límites del laberinto y no sea una pared
+          if (vecino_pos.first < 0 || vecino_pos.first >= filas_ ||
+             vecino_pos.second < 0 || vecino_pos.second >= columnas_) continue; // Fuera de límites
+          if (grid_[vecino_pos.first][vecino_pos.second] == 1) continue; // Pared
+
+          // Calcular el costo de movimiento: diagonal = 7, ortogonal = 5
+          int costo_movimiento = (abs(i) == abs(j)) ? 7 : 5;
+          int nuevo_g = actual->GetG() + costo_movimiento;
+
+          // Verificar si el vecino ya está en la lista de cerrados
+          auto it_cerrados = std::find_if(cerrados.begin(), cerrados.end(), [&vecino_pos](Nodo* n) {
+            return n->GetPosicion() == vecino_pos;
+          });
+          // Si está en cerrados, ignorarlo
+          if (it_cerrados != cerrados.end()) continue;
+
+          // Verificar si el vecino ya está en la lista de abiertos
+          auto it_abiertos = std::find_if(abiertos.begin(), abiertos.end(), [&vecino_pos](Nodo* n) {
+            return n->GetPosicion() == vecino_pos;
+          });
+          // Si está en abiertos, verificar si el nuevo camino es mejor
+          if (it_abiertos != abiertos.end()) {
+            // Actualizar el nodo si el nuevo camino es mejor
+            if (nuevo_g < (*it_abiertos)->GetG()) {
+              (*it_abiertos)->SetPadre(actual);
+              (*it_abiertos)->SetG(nuevo_g);
+            }
+          } else {
+            // Crear el nodo si no está en abiertos
+            Nodo* vecino = new Nodo(vecino_pos, actual, nuevo_g, Heuristica(vecino_pos));
+            abiertos.push_back(vecino);
+            nodos_generados_++;
+          }
+        } 
+      }
+      
     }
 
-    // Mover actual de abiertos a cerrados
-    cerrados.push_back(actual);
-    abiertos.erase(abiertos.begin()); 
+    // Si no se encontró camino, liberar memoria de nodos
+    for (auto nodo : abiertos) delete nodo;
+    for (auto nodo : cerrados) delete nodo;
 
-    // Para cada vecino del nodo actual
-    for (int i = -1; i <= 1; i++) {
-      for (int j = -1; j <= 1; j++) {
-        if (i == 0 && j == 0) continue; // Evitar el mismo nodo
-        std::pair<int, int> vecino_pos = {actual->GetPosicion().first + i, actual->GetPosicion().second + j};
-        // Verificar que el vecino esté dentro de los límites del laberinto y no sea una pared
-        if (vecino_pos.first < 0 || vecino_pos.first >= filas_ || vecino_pos.second < 0 
-        || vecino_pos.second >= columnas_) continue; // Fuera de límites
-        if (grid_[vecino_pos.first][vecino_pos.second] == 1) continue; // Pared
+    // Incrementar el contador de intentos
+    intentos++;
 
-        // Calcular el costo de movimiento: diagonal = 7, ortogonal = 5
-        int costo_movimiento = (abs(i) == abs(j)) ? 7 : 5;
-        int nuevo_g = actual->GetG() + costo_movimiento;
-
-        // Verificar si el vecino ya está en la lista de cerrados
-        auto it_cerrados = std::find_if(cerrados.begin(), cerrados.end(), [&vecino_pos](Nodo* n) {
-          return n->GetPosicion() == vecino_pos;
-        });
-        // Si está en cerrados, ignorarlo
-        if (it_cerrados != cerrados.end()) continue;
-
-        // Verificar si el vecino ya está en la lista de abiertos
-        auto it_abiertos = std::find_if(abiertos.begin(), abiertos.end(), [&vecino_pos](Nodo* n) {
-          return n->GetPosicion() == vecino_pos;
-        });
-        // Si está en abiertos, verificar si el nuevo camino es mejor
-        if (it_abiertos != abiertos.end()) {
-          // Actualizar el nodo si el nuevo camino es mejor
-          if (nuevo_g < (*it_abiertos)->GetG()) {
-            (*it_abiertos)->SetPadre(actual);
-            (*it_abiertos)->SetG(nuevo_g);
-          }
-        } else {
-          // Crear el nodo si no está en abiertos
-          Nodo* vecino = new Nodo(vecino_pos, actual, nuevo_g, Heuristica(vecino_pos));
-          abiertos.push_back(vecino);
+    // Si no se encontró camino y aún quedan intentos, eliminar un muro aleatorio
+    if (intentos < max_intentos) {
+      std::cout << "No se encontró camino. Eliminando un muro aleatorio e intentando de nuevo..." << std::endl;
+      bool muro_eliminado = false;
+      while (!muro_eliminado) {
+        int fila = std::rand() % filas_;
+        int columna = std::rand() % columnas_;
+        if (grid_[fila][columna] == 1) { // Si es un muro
+          grid_[fila][columna] = 0; // Convertirlo en espacio libre
+          muro_eliminado = true;
         }
       }
     }
   }
-  // Paso 3: Si A = ∅ y no se ha llegado a la salida del laberinto, E, no existe camino y se
-  // deberá mostrar en pantalla un mensaje que así lo indique.
-  if (abiertos.empty() && actual->GetPosicion() != fin_) {
-    std::cout << "No se encontro camino" << std::endl;
-    return false;
-  }
 
-  // Liberar memoria de nodos
-  for (auto nodo : abiertos) delete nodo;
-  for (auto nodo : cerrados) delete nodo;
-
-  return true; 
+  // Si se alcanzó el número máximo de intentos y no se encontró camino
+  std::cout << "No se encontró camino después de " << max_intentos << " intentos." << std::endl;
+  return false;
 }
 
 
@@ -140,30 +164,45 @@ bool Laberinto::Aestrella() {
  * @brief Modifica el laberinto aleatoriamente, cambiando algunas casillas libres a obstáculos y viceversa.
  * Asegura que no haya más de un 25% de obstáculos en el laberinto.
  */
-
-
-// TODO LIST: implemtar que se pueda cambiar con una entrada de teclado
-void Laberinto::Randomizer() {
-  float pin = 0.5, pout = 0.5;
+void Laberinto::Randomizer(const double pin, const double pout) {
   std::srand(static_cast<unsigned>(std::time(nullptr))); // Inicializar la semilla aleatoria
   for (int i = 0; i < filas_; ++i) {
     for (int j = 0; j < columnas_; ++j) {
-      if (grid_[i][j] == 0 || grid_[i][j] == 5) { // Casilla libre o parte del camino
-        float random_value = static_cast<float>(std::rand()) / RAND_MAX;
+      if (grid_[i][j] == 0 || grid_[i][j] == 5 || grid_[i][j] == 7) { // Casilla libre, parte del camino proyectado o posición del agente
+        double random_value = static_cast<double>(std::rand()) / RAND_MAX;
         if (random_value >= (1 - pin)) {
-          if (grid_[i][j] == 5) grid_[i][j] = 6; // Marcar que la casilla antes era parte del camino
+          if (grid_[i][j] == 7) grid_[i][j] = 6; // Marcar una posicion del agente que se convierte en pared
           else grid_[i][j] = 1; // Convertir en obstáculo
         }
-      } else if (grid_[i][j] == 1) { // Casilla con obstáculo
-        float random_value = static_cast<float>(std::rand()) / RAND_MAX;
+      } else if (grid_[i][j] == 1 || grid_[i][j] == 6) { // Casilla con obstáculo o que fue parte del camino del agente y se convirtió en pared
+        double random_value = static_cast<double>(std::rand()) / RAND_MAX;
         if (random_value >= (1 - pout)) {
-          grid_[i][j] = 0; // Convertir en libre
+          if (grid_[i][j] == 6) grid_[i][j] = 7; // Marcar una posicion del agente que se convierte en libre
+          else grid_[i][j] = 0; // Convertir en libre
         }
       }
     }
   } 
   // Asegurar que no haya mas de un 25% de obstáculos
   AsegurarObstaculosMinimos();
+}
+
+
+void Laberinto::Practica(const std::string& output_name) {
+  while (inicio_ != fin_) {
+    // Iteración de A estrella
+    Aestrella();
+    //Marcar el movimiento del agente
+    grid_[inicio_.first][inicio_.second] = 7;
+    // Impresión del laberinto
+    ImprimirLaberinto(output_name);
+    // Borrar el camino marcado
+    BorrarCamino();
+    // Randomizer
+    Randomizer();
+    // Impresion de los detalles del laberinto
+    ImprimirDetallesLaberinto(output_name);
+  }
 }
 
 
@@ -174,32 +213,42 @@ void Laberinto::Randomizer() {
  * Representa espacios libres con '-', paredes con '█', el inicio con 'S', la salida con 'E', y 
  * el camino encontrado con '*'.
  */
-void Laberinto::ImprimirLaberinto() const {
-  std::cout << std::endl;
+void Laberinto::ImprimirLaberinto(const std::string& output_name) const {
+  std::ofstream output(output_name, std::ios::app);
+  if (!output.is_open()) {
+    std::cerr << "Error al abrir el archivo de salida: " << output_name << std::endl;
+    return;
+  }
   for (const auto& fila : grid_) {
     for (const auto& celda : fila) {
       switch (celda) {
         case 0:
-          std::cout << "-";  // Espacio libre
+          output << "-";  // Espacio libre
           break;
         case 1:
-          std::cout << "█";  // Pared
+          output << "█";  // Pared
           break;
         case 3:
-          std::cout << "S";  // Inicio
+          output << "S";  // Inicio
           break;
         case 4:
-          std::cout << "E";  // Salida
+          output << "E";  // Salida
           break;
         case 5:
-            std::cout << "*";  // Camino encontrado
+            output << "*";  // Camino encontrado
+          break;
+        case 6:
+            output << "^";  // Camino que fue modificado a pared
+          break;
+        case 7:
+            output << "A"; // Posición actual del agente
           break;
         default:
-          std::cout << "? ";  // Desconocido
+            output << "? ";  // Desconocido
           break;
       }
     }
-    std::cout << std::endl;
+    output << std::endl;
   }
-  std::cout << std::endl;
+  output.close();
 }

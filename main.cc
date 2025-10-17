@@ -16,8 +16,8 @@
 int main(int argc, char* argv[]) {
   std::srand(std::time(nullptr)); // Semilla para números aleatorios
 
-  if (argc != 2) {
-    std::cerr << "Uso: " << argv[0] << " <archivo_entrada>" << std::endl;
+  if (argc != 3) {
+    std::cerr << "Uso: " << argv[0] << " <archivo_entrada> <archivo_salida>" << std::endl;
     return 1;
   }
 
@@ -28,14 +28,12 @@ int main(int argc, char* argv[]) {
   //bool entrada_teclado = (opcion == 's' || opcion == 'S');
 
   Laberinto laberinto;
-  if (!laberinto.ProcesarArchivoEntrada(argv[1], false)) {
+  if (!laberinto.ProcesarArchivoEntrada(argv[1], argv[2], false)) {
     return 1;
   }
 
-  laberinto.ImprimirLaberinto();
-  //laberinto.Randomizer();
-  //laberinto.ImprimirLaberinto();
-  
+  laberinto.Practica(argv[2]);
+
   // Ejecutar el algoritmo A*
   if (!laberinto.Aestrella()) {
     std::cerr << "Ha ocurrido un error al ejecutar el algoritmo A*" << std::endl;
