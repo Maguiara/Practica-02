@@ -1,13 +1,32 @@
-#include "laberinto.h"
+/**
+ * Universidad de La Laguna
+ * Escuela Superior de Ingeniería y Tecnología
+ * Grado en Ingeniería Informática
+ * Inteligencia Artificial
+ *
+ * @author Marco Aguiar Álvarez alu0101620961@ull.edu.es
+ * @date  07 10 25
+ * @name laberinto.cc
+ * @brief Implementacion de la clase Laberinto y todos los metodos que la componen (principales y auxiliares) 
+ * para la practica 02 sobre A*.
+ * 
+ */ 
 
+
+ #include "laberinto.h"
 
 
 /**
- * @brief Procesa el archivo de entrada para construir el laberinto.
- * @param input_name: Nombre del archivo de entrada
- * @return: true si el archivo se procesa correctamente, false en caso contrario
+ * @brief Procesa el archivo de entrada para inicializar el laberinto.
+ * @param input_name: Nombre del archivo de entrada.
+ * @param output_name: Nombre del archivo de salida.
+ * @param entrada_teclado: Indica si las posiciones de inicio y fin se proporcion
+ * an por teclado.
+ * @param input_posiciones: Vector con las posiciones de inicio y fin si se proporcionan
+ * por teclado.
+ * @return true si el archivo se procesa correctamente, false en caso contrario.
  */
-bool Laberinto::ProcesarArchivoEntrada(const std::string& input_name, const std::string& output_name, bool entrada_teclado) {
+bool Laberinto::ProcesarArchivoEntrada(const std::string& input_name, const std::string& output_name, bool entrada_teclado, std::vector<std::pair<int, int>> input_posiciones) {
   std::ifstream input(input_name);
   if(!input.is_open()) {
     std::cerr << "No se pudo abrir el archivo de entrada, revise el nombre o que este exista" << std::endl;
@@ -19,6 +38,9 @@ bool Laberinto::ProcesarArchivoEntrada(const std::string& input_name, const std:
     std::cerr << "Error al leer el numero de filas o columnas, o estos son invalidos" << std::endl;
     return false;
   }
+
+  // Informacion del laberinto cargada correctamente
+  std::cout << "Laberinto de " << filas_ << " filas y " << columnas_ << " columnas cargado." << std::endl;
 
   grid_.resize(filas_, std::vector<int>(columnas_));
 
@@ -38,18 +60,31 @@ bool Laberinto::ProcesarArchivoEntrada(const std::string& input_name, const std:
   input.close();
 
   if (entrada_teclado) {
-    std::cout << "Laberinto cargado desde archivo:" << std::endl;
-    ImprimirLaberinto(output_name);
+    grid_ [inicio_.first][inicio_.second] = 1; // Convertir inicio en pared
+    grid_ [fin_.first][fin_.second] = 1; // Convertir fin en pared
+    // asegurar que las posiciones sean válidas y estén en los bordes del laberinto
+    for (const auto& pos : input_posiciones) {
+      if (pos.first < 0 || pos.first >= filas_ || pos.second < 0 || pos.second >= columnas_) {
+      std::cerr << "Posición inválida: (" << pos.first << ", " << pos.second << ")" << std::endl;
+      return false;
+      }
+      if (pos.first != 0 && pos.first != filas_ - 1 && pos.second != 0 && pos.second != columnas_ - 1) {
+        std::cerr << "La posición debe estar en los bordes del laberinto: (" << pos.first << ", " << pos.second << ")" << std::endl;
+        return false;
+      }
+    }
+    inicio_ = input_posiciones[0];
+    fin_ = input_posiciones[1];
+    grid_ [inicio_.first][inicio_.second] = 3; // Marcar nuevo inicio
+    grid_ [fin_.first][fin_.second] = 4; // Marcar nuevo fin
   }
   return true;
 }
 
 
 /**
- * @brief Implementación del algoritmo A*
- * @param inicio: Par de enteros que representa la posición inicial (fila, columna)
- * @param fin: Par de enteros que representa la posición final (fila, columna)
- * @return: true si se encuentra una ruta, false en caso contrario
+  * @brief Implementación del algoritmo A* para encontrar el camino desde el inicio hasta el fin del laberinto.
+  * @return true si se encuentra un camino, false en caso contrario
  */
 bool Laberinto::Aestrella() {
   const int max_intentos = 5; // Número máximo de intentos
@@ -71,6 +106,7 @@ bool Laberinto::Aestrella() {
       });
       actual = abiertos[0];
       nodos_inspeccionados_++;
+      log_inspeccionados_ << "(" << actual->GetPosicion().first << ", " << actual->GetPosicion().second << ") ";
 
       // Prueba meta
       if (actual->GetPosicion() == fin_) {
@@ -126,6 +162,7 @@ bool Laberinto::Aestrella() {
             Nodo* vecino = new Nodo(vecino_pos, actual, nuevo_g, Heuristica(vecino_pos));
             abiertos.push_back(vecino);
             nodos_generados_++;
+            log_generados_ << "(" << vecino->GetPosicion().first << ", " << vecino->GetPosicion().second << ") ";
           }
         } 
       }
@@ -187,15 +224,23 @@ void Laberinto::Randomizer(const double pin, const double pout) {
   AsegurarObstaculosMinimos();
 }
 
-
+/**
+ * @brief Realiza la práctica completa: mueve el agente desde el inicio hasta el fin,
+ * aplicando A*, imprimiendo el laberinto y modificándolo con el randomizer en cada paso.
+ * @param output_name: Nombre del archivo de salida donde se imprimirá el laberinto en cada paso. 
+ */
 void Laberinto::Practica(const std::string& output_name) {
+  // Imprimir el laberinto inicial
+  ImprimirDetallesIniciales(output_name);
   while (inicio_ != fin_) {
     // Iteración de A estrella
     Aestrella();
-    //Marcar el movimiento del agente
-    grid_[inicio_.first][inicio_.second] = 7;
     // Impresión del laberinto
     ImprimirLaberinto(output_name);
+    //Marcar el movimiento del agente
+    grid_[inicio_.first][inicio_.second] = 7;
+    // Incrementar el contador de pasos
+    numeros_pasos_++;
     // Borrar el camino marcado
     BorrarCamino();
     // Randomizer
@@ -210,8 +255,9 @@ void Laberinto::Practica(const std::string& output_name) {
 
 /**
  * @brief Imprime el laberinto en la consola.
- * Representa espacios libres con '-', paredes con '█', el inicio con 'S', la salida con 'E', y 
- * el camino encontrado con '*'.
+ * Representa espacios libres con '-', paredes con '█', el inicio con 'S', la salida con 'E', 
+ * el camino encontrado con '*', las posiciones del agente con 'A', y las posiciones que fueron modificadas a pared con '^'.
+ * @param output_name: Nombre del archivo de salida donde se imprimirá el laberinto
  */
 void Laberinto::ImprimirLaberinto(const std::string& output_name) const {
   std::ofstream output(output_name, std::ios::app);
@@ -238,7 +284,7 @@ void Laberinto::ImprimirLaberinto(const std::string& output_name) const {
             output << "*";  // Camino encontrado
           break;
         case 6:
-            output << "^";  // Camino que fue modificado a pared
+            output << "░";  // Camino que fue modificado a pared
           break;
         case 7:
             output << "A"; // Posición actual del agente

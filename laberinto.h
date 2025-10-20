@@ -1,14 +1,16 @@
 /**
-  * Universidad de La Laguna
-  * Escuela Superior de Ingeniería y Tecnología
-  * Grado en Ingeniería Informática
-  * Inteligencia Artificial
-  *
-  * @author Marco Aguiar Álvarez alu0101620961@ull.edu.es
-  * @date 07 10 25
-  * @brief Implementacion de la clase Laberinto
-  *
-*/ 
+ * Universidad de La Laguna
+ * Escuela Superior de Ingeniería y Tecnología
+ * Grado en Ingeniería Informática
+ * Inteligencia Artificial
+ *
+ * @author Marco Aguiar Álvarez alu0101620961@ull.edu.es
+ * @date  07 10 25
+ * @name laberinto.h
+ * @brief Declaracion de la clase Laberinto y todos los metodos que la componen (principales y auxiliares) 
+ * para la practica 02 sobre A*.
+ * 
+ */ 
 
 #ifndef LABERINTO_H
 #define LABERINTO_H
@@ -21,7 +23,12 @@
 #include <algorithm>
 #include <random> 
 #include <ctime>
+#include <sstream>
 
+
+/**
+ * @brief Clase que representa un nodo en el algoritmo A*.
+ */
 class Nodo {
 
  public:
@@ -56,32 +63,23 @@ class Nodo {
 
 
 
-enum Movimientos {
-  ARRIBA = 5,
-  ABAJO = 5,
-  IZQUIERDA = 5,
-  DERECHA = 5,
-  DIAGONAL_ARRIBA_IZQUIERDA = 7,
-  DIAGONAL_ARRIBA_DERECHA = 7,
-  DIAGONAL_ABAJO_IZQUIERDA = 7,
-  DIAGONAL_ABAJO_DERECHA = 7
-};
 
-
-
-
+// Type def para usar Matrix (se ve mas cool que vector de vectores)
 typedef std::vector<std::vector<int>> Matrix; 
 
+/**
+ * @brief Clase que representa un laberinto y contiene métodos para procesarlo y aplicar el algoritmo A*.
+ */
 class Laberinto {
  public:
 
  // Constructor
-  bool ProcesarArchivoEntrada(const std::string&, const std::string&, bool);
+  bool ProcesarArchivoEntrada(const std::string&, const std::string&, bool, std::vector<std::pair<int, int>>);
 
   // Setter
-
   void SetInicio(const std::pair<int, int>& inicio) { inicio_ = inicio; }
   void SetFin(const std::pair<int, int>& fin) { fin_ = fin; }
+
   // Funciones principales
   bool Aestrella();
   void Randomizer(const double pin = 0.5, const double pout = 0.5);
@@ -166,11 +164,24 @@ class Laberinto {
     output << "Posición de la Salida:     (" << fin_.first << ", " << fin_.second << ")" << std::endl;
     output << "Porcentaje de Obstáculos:  " << GetPorcentajeObstaculos() * 100 << "%" << std::endl;
     output << "Nodos Generados:           " << nodos_generados_ << std::endl;
+    output << log_generados_.str() << std::endl;
     output << "Nodos Inspeccionados:      " << nodos_inspeccionados_ << std::endl;
+    output << log_inspeccionados_.str() << std::endl;
     output << "Pasos del Agente:          " << numeros_pasos_ << std::endl;
     output << "========================" << std::endl;
     output.close();
   }
+
+  void ImprimirDetallesIniciales(const std::string& output_file) const {
+    std::ofstream output(output_file);
+    if (!output.is_open()) {
+      std::cerr << "Error al abrir el archivo de salida: " << output_file << std::endl;
+      return;
+    }
+    output << "Laberinto Inicial:" << std::endl;
+    ImprimirLaberinto(output_file);
+    ImprimirDetallesLaberinto(output_file);
+  } 
   
   private:
   // Atributos del laberinto
@@ -188,6 +199,10 @@ class Laberinto {
   // Probabilidades para el randomizer
   float pin_ = 0.5; // Probabilidad de que una celda libre se convierta en obstáculo
   float pout_ = 0.5; // Probabilidad de que una celda con
+
+  // log con los nodos generados e inspeccionados
+  std::ostringstream log_generados_;
+  std::ostringstream log_inspeccionados_;
 };
 
 
