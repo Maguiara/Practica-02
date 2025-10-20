@@ -118,6 +118,8 @@ bool Laberinto::Aestrella() {
         for (auto nodo : abiertos) delete nodo;
         for (auto nodo : cerrados) delete nodo;
 
+        costo_total_ = actual->GetG();
+
         return true;
       }
 
@@ -231,7 +233,7 @@ void Laberinto::Randomizer(const double pin, const double pout) {
  */
 void Laberinto::Practica(const std::string& output_name) {
   // Imprimir el laberinto inicial
-  ImprimirDetallesIniciales(output_name);
+  //ImprimirDetallesIniciales(output_name);
   while (inicio_ != fin_) {
     // Iteración de A estrella
     Aestrella();
@@ -243,10 +245,10 @@ void Laberinto::Practica(const std::string& output_name) {
     numeros_pasos_++;
     // Borrar el camino marcado
     BorrarCamino();
-    // Randomizer
-    Randomizer();
     // Impresion de los detalles del laberinto
     ImprimirDetallesLaberinto(output_name);
+    // Randomizer
+    Randomizer();
   }
 }
 

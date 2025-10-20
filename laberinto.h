@@ -127,11 +127,13 @@ class Laberinto {
   /// @brief Calcula el porcentaje de obstáculos en el laberinto.
   /// @return Porcentaje de obstáculos (valor entre 0 y 1).
   double GetPorcentajeObstaculos() const {
-    double total = filas_ * columnas_, obstaculos = 0;
+    double total = filas_ * columnas_;
+    double obstaculos = 0;
     for (const auto& fila : grid_) {
       obstaculos += std::count(fila.begin(), fila.end(), 1);
     }
-    return obstaculos / total;
+    double porcentaje = obstaculos / total;
+    return porcentaje;
   }
 
   /// @brief Mueve el agente una vez hacia la posición del siguiente paso en el camino encontrado por A*.
@@ -168,10 +170,15 @@ class Laberinto {
     output << "Nodos Inspeccionados:      " << nodos_inspeccionados_ << std::endl;
     output << log_inspeccionados_.str() << std::endl;
     output << "Pasos del Agente:          " << numeros_pasos_ << std::endl;
+    output << "Costo Total del Camino:    " << costo_total_ << std::endl;
     output << "========================" << std::endl;
     output.close();
   }
 
+  /**
+   * @brief Imprime los detalles iniciales del laberinto en el archivo de salida.
+   * @param output_file: Nombre del archivo de salida donde se imprimirán los detalles.
+   */
   void ImprimirDetallesIniciales(const std::string& output_file) const {
     std::ofstream output(output_file);
     if (!output.is_open()) {
@@ -195,6 +202,7 @@ class Laberinto {
   int nodos_generados_ = 0; // Contador de nodos generados
   int nodos_inspeccionados_ = 0; // Contador de nodos inspeccionados
   int numeros_pasos_ = 0; // Contador de pasos realizados por el agente
+  int costo_total_ = 0; // Costo total del camino encontrado
   
   // Probabilidades para el randomizer
   float pin_ = 0.5; // Probabilidad de que una celda libre se convierta en obstáculo
