@@ -102,11 +102,11 @@ bool Laberinto::Aestrella() {
     std::vector<Nodo*> cerrados;
 
     //reiniciamos en cada iteracion los contadores y logs para cada iteracion de A*
-    //log_generados_.str("");
-    //log_inspeccionados_.str("");
-    //nodos_generados_ = 0;
-    //nodos_inspeccionados_ = 0;
-    
+    log_generados_.str("");
+    log_inspeccionados_.str("");
+    nodos_generados_ = 0;
+    nodos_inspeccionados_ = 0;
+
 
     // Inicializamos e insertamos el nodo inicial en A
     Nodo* actual = new Nodo(inicio_, nullptr, 0, Heuristica(inicio_));
