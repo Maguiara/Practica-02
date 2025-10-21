@@ -250,12 +250,12 @@ void Laberinto::Practica(const std::string& output_name) {
   while (inicio_ != fin_) {
     // Iteración de A estrella
     Aestrella();
+    // Impresión del laberinto
+    ImprimirLaberinto(output_name);
     //Marcar el movimiento del agente
     grid_[inicio_.first][inicio_.second] = 7;
     // Incrementar el contador de pasos
     numeros_pasos_++;
-    // Impresión del laberinto
-    ImprimirLaberinto(output_name);
     // Borrar el camino marcado
     BorrarCamino();
     // Impresion de los detalles del laberinto
