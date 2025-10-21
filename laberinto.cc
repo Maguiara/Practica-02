@@ -78,6 +78,13 @@ bool Laberinto::ProcesarArchivoEntrada(const std::string& input_name, const std:
     grid_ [inicio_.first][inicio_.second] = 3; // Marcar nuevo inicio
     grid_ [fin_.first][fin_.second] = 4; // Marcar nuevo fin
   }
+  // Crear o limpiar el archivo de salida
+  std::ofstream output(output_name);
+  if(!output.is_open()) {
+    std::cerr << "No se pudo abrir el archivo de salida, revise el nombre o que este exista" << std::endl;
+    return false;
+  }
+  output.close();
   return true;
 }
 
@@ -93,6 +100,13 @@ bool Laberinto::Aestrella() {
   while (intentos < max_intentos) {
     std::vector<Nodo*> abiertos;
     std::vector<Nodo*> cerrados;
+
+    //reiniciamos en cada iteracion los contadores y logs para cada iteracion de A*
+    //log_generados_.str("");
+    //log_inspeccionados_.str("");
+    //nodos_generados_ = 0;
+    //nodos_inspeccionados_ = 0;
+    
 
     // Inicializamos e insertamos el nodo inicial en A
     Nodo* actual = new Nodo(inicio_, nullptr, 0, Heuristica(inicio_));
@@ -113,12 +127,11 @@ bool Laberinto::Aestrella() {
         // std::cout << "Camino encontrado en el intento " << intentos + 1 << std::endl;
         MarcarCaminoAestrella(actual);
         //
-        inicio_ = MoverAgente(actual)->GetPosicion();
+        inicio_ = MoverAgente(actual)->GetPosicion(); 
         // Liberar memoria de nodos
         for (auto nodo : abiertos) delete nodo;
         for (auto nodo : cerrados) delete nodo;
 
-        costo_total_ = actual->GetG();
 
         return true;
       }
@@ -233,16 +246,16 @@ void Laberinto::Randomizer(const double pin, const double pout) {
  */
 void Laberinto::Practica(const std::string& output_name) {
   // Imprimir el laberinto inicial
-  //ImprimirDetallesIniciales(output_name);
+  ImprimirDetallesIniciales(output_name);
   while (inicio_ != fin_) {
     // Iteración de A estrella
     Aestrella();
-    // Impresión del laberinto
-    ImprimirLaberinto(output_name);
     //Marcar el movimiento del agente
     grid_[inicio_.first][inicio_.second] = 7;
     // Incrementar el contador de pasos
     numeros_pasos_++;
+    // Impresión del laberinto
+    ImprimirLaberinto(output_name);
     // Borrar el camino marcado
     BorrarCamino();
     // Impresion de los detalles del laberinto

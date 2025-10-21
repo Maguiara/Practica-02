@@ -141,6 +141,13 @@ class Laberinto {
      while (nodo->GetPadre() != nullptr && nodo->GetPadre()->GetPadre() != nullptr) {
         nodo = nodo->GetPadre();
       }
+      // si me movi diagonal sumo 7 si no sumo 5
+      if (nodo->GetPadre()->GetPosicion().first != nodo->GetPosicion().first && nodo->GetPadre()->GetPosicion().second != nodo->GetPosicion().second) 
+        costo_total_ += 7;
+      else costo_total_ += 5;
+
+      // Almacenar el paso en el vector camino_
+      camino_.push_back(nodo->GetPosicion());
       return nodo;
   }
 
@@ -169,6 +176,11 @@ class Laberinto {
     output << log_generados_.str() << std::endl;
     output << "Nodos Inspeccionados:      " << nodos_inspeccionados_ << std::endl;
     output << log_inspeccionados_.str() << std::endl;
+    output << "Camino del Agente:         ";
+    for (const auto& paso : camino_) {
+      output << "(" << paso.first << ", " << paso.second << ") ";
+    }
+    output << std::endl;
     output << "Pasos del Agente:          " << numeros_pasos_ << std::endl;
     output << "Costo Total del Camino:    " << costo_total_ << std::endl;
     output << "========================" << std::endl;
@@ -203,6 +215,7 @@ class Laberinto {
   int nodos_inspeccionados_ = 0; // Contador de nodos inspeccionados
   int numeros_pasos_ = 0; // Contador de pasos realizados por el agente
   int costo_total_ = 0; // Costo total del camino encontrado
+  std::vector<std::pair<int, int>> camino_ ; // Vector para almacenar el camino encontrado
   
   // Probabilidades para el randomizer
   float pin_ = 0.5; // Probabilidad de que una celda libre se convierta en obstáculo
